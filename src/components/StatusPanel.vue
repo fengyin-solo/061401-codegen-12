@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import type { ActiveInjury, Injury } from '@/types/game'
 
 interface StatItem {
   label: string
@@ -11,15 +12,33 @@ interface StatItem {
   isReverse?: boolean
 }
 
+interface InjuryItem {
+  injuryId: string
+  name: string
+  icon: string
+  description: string
+  healthDebuffPerTurn: number
+  turnsRemaining: number
+  turnsTotal: number
+  treatCost: { wood?: number; stone?: number }
+  canTreat: boolean
+}
+
 interface Props {
   health: number
   hunger: number
   thirst: number
   wood: number
   stone: number
+  injuries: InjuryItem[]
+  canTreatInjury: (id: string) => boolean
 }
 
 const props = defineProps<Props>()
+
+const emit = defineEmits<{
+  treat: [injuryId: string]
+}>()
 
 const stats = computed<StatItem[]>(() => [
   {
@@ -78,6 +97,17 @@ function isDanger(value: number, max: number, isReverse?: boolean): boolean {
   }
   return percent <= 20
 }
+
+function getInjuryProgress(item: InjuryItem): number {
+  return Math.round(((item.turnsTotal - item.turnsRemaining) / item.turnsTotal) * 100)
+}
+
+function formatTreatCost(cost: { wood?: number; stone?: number }): string {
+  const parts: string[] = []
+  if (cost.wood) parts.push(`🪵${cost.wood}`)
+  if (cost.stone) parts.push(`🪨${cost.stone}`)
+  return parts.join(' ')
+}
 </script>
 
 <template>
@@ -112,6 +142,56 @@ function isDanger(value: number, max: number, isReverse?: boolean): boolean {
             :class="[stat.barColor, 'h-full rounded-full transition-all duration-300 ease-out']"
             :style="{ width: getBarWidth(stat.value, stat.max) }"
           ></div>
+        </div>
+      </div>
+    </div>
+
+    <div v-if="injuries.length > 0" class="mt-5">
+      <div class="border-t border-game-border pt-4">
+        <h3 class="text-sm font-bold text-red-400 mb-3 flex items-center gap-2">
+          <span>🏥</span>
+          <span>伤病状态</span>
+        </h3>
+        <div class="space-y-2.5">
+          <div
+            v-for="injury in injuries"
+            :key="injury.injuryId"
+            class="bg-red-950/30 border border-red-900/40 rounded-lg p-3"
+          >
+            <div class="flex items-center justify-between mb-1.5">
+              <div class="flex items-center gap-2">
+                <span class="text-base">{{ injury.icon }}</span>
+                <span class="text-red-300 font-semibold text-sm">{{ injury.name }}</span>
+              </div>
+              <span class="text-red-400/70 text-xs tabular-nums">
+                剩余 {{ injury.turnsRemaining }} 回合
+              </span>
+            </div>
+            <p class="text-red-400/60 text-xs mb-2">{{ injury.description }}</p>
+            <div class="h-1.5 bg-gray-800 rounded-full overflow-hidden mb-2">
+              <div
+                class="h-full bg-red-600/60 rounded-full transition-all duration-300"
+                :style="{ width: getInjuryProgress(injury) + '%' }"
+              ></div>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-gray-500 text-xs">
+                治疗: {{ formatTreatCost(injury.treatCost) }}
+              </span>
+              <button
+                @click="emit('treat', injury.injuryId)"
+                :disabled="!injury.canTreat"
+                :class="[
+                  'text-xs px-3 py-1 rounded-md font-medium transition-all',
+                  injury.canTreat
+                    ? 'bg-green-800/50 text-green-300 hover:bg-green-700/60 cursor-pointer active:scale-95'
+                    : 'bg-gray-800/50 text-gray-600 cursor-not-allowed',
+                ]"
+              >
+                🏥 治疗
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>

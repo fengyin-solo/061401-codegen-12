@@ -1,3 +1,18 @@
+export interface Injury {
+  id: string
+  name: string
+  icon: string
+  description: string
+  healthDebuffPerTurn: number
+  treatCost: { wood?: number; stone?: number }
+}
+
+export interface ActiveInjury {
+  injuryId: string
+  turnsRemaining: number
+  turnsTotal: number
+}
+
 export interface GameState {
   health: number
   hunger: number
@@ -7,12 +22,13 @@ export interface GameState {
   turn: number
   isGameOver: boolean
   logs: LogEntry[]
+  injuries: ActiveInjury[]
 }
 
 export interface LogEntry {
   id: number
   text: string
-  type: 'action' | 'event' | 'system' | 'good' | 'bad'
+  type: 'action' | 'event' | 'system' | 'good' | 'bad' | 'injury'
   turn: number
 }
 
@@ -27,6 +43,7 @@ export interface RandomEvent {
     wood?: number
     stone?: number
   }
+  injuryId?: string
 }
 
 export type ActionType = 'gatherWood' | 'gatherStone' | 'hunt' | 'drink'

@@ -6,9 +6,35 @@ import EventLog from '@/components/EventLog.vue'
 import GameOverModal from '@/components/GameOverModal.vue'
 import { useGame } from '@/composables/useGame'
 
-const { state, highScore, canPerformAction, gatherWood, gatherStone, hunt, drink, restart } = useGame()
+const {
+  state,
+  highScore,
+  canPerformAction,
+  canTreatInjury,
+  treatInjury,
+  activeInjuries,
+  gatherWood,
+  gatherStone,
+  hunt,
+  drink,
+  restart,
+} = useGame()
 
 const isNewRecord = computed(() => state.value.turn >= highScore.value && state.value.turn > 0)
+
+const injuryItems = computed(() =>
+  activeInjuries.value.map(ai => ({
+    injuryId: ai.injuryId,
+    name: ai.definition.name,
+    icon: ai.definition.icon,
+    description: ai.definition.description,
+    healthDebuffPerTurn: ai.definition.healthDebuffPerTurn,
+    turnsRemaining: ai.turnsRemaining,
+    turnsTotal: ai.turnsTotal,
+    treatCost: ai.definition.treatCost,
+    canTreat: canTreatInjury(ai.injuryId),
+  }))
+)
 </script>
 
 <template>
@@ -35,6 +61,10 @@ const isNewRecord = computed(() => state.value.turn >= highScore.value && state.
           <span class="text-gray-400 text-sm">最高纪录</span>
           <p class="text-2xl font-bold text-yellow-400 tabular-nums">🏆 {{ highScore }}</p>
         </div>
+        <div v-if="state.injuries.length > 0" class="bg-red-950/60 backdrop-blur px-6 py-3 rounded-xl border border-red-900/50">
+          <span class="text-red-400 text-sm">伤病</span>
+          <p class="text-2xl font-bold text-red-400 tabular-nums">🩹 {{ state.injuries.length }}</p>
+        </div>
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -45,6 +75,9 @@ const isNewRecord = computed(() => state.value.turn >= highScore.value && state.
             :thirst="state.thirst"
             :wood="state.wood"
             :stone="state.stone"
+            :injuries="injuryItems"
+            :can-treat-injury="canTreatInjury"
+            @treat="treatInjury"
           />
         </div>
 
@@ -68,7 +101,7 @@ const isNewRecord = computed(() => state.value.turn >= highScore.value && state.
       </div>
 
       <footer class="mt-8 text-center text-gray-500 text-sm">
-        <p>💡 提示：生命值归零或饥饿/口渴值满格则游戏结束</p>
+        <p>💡 提示：生命值归零或饥饿/口渴值满格则游戏结束 | 受伤后及时治疗，否则持续损失生命</p>
       </footer>
     </div>
 

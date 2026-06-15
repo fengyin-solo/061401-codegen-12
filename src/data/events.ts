@@ -1,4 +1,39 @@
-import type { RandomEvent } from '@/types/game'
+import type { RandomEvent, Injury } from '@/types/game'
+
+export const injuryDefinitions: Injury[] = [
+  {
+    id: 'fracture',
+    name: '骨折',
+    icon: '🦴',
+    description: '骨骼断裂，行动困难，每回合损失3点生命',
+    healthDebuffPerTurn: 3,
+    treatCost: { wood: 6, stone: 4 },
+  },
+  {
+    id: 'bleeding',
+    name: '出血',
+    icon: '🩸',
+    description: '伤口持续流血，每回合损失4点生命',
+    healthDebuffPerTurn: 4,
+    treatCost: { wood: 3, stone: 2 },
+  },
+  {
+    id: 'infection',
+    name: '感染',
+    icon: '🦠',
+    description: '伤口感染发炎，每回合损失2点生命',
+    healthDebuffPerTurn: 2,
+    treatCost: { wood: 4, stone: 3 },
+  },
+  {
+    id: 'sprain',
+    name: '扭伤',
+    icon: '🩹',
+    description: '关节扭伤肿胀，每回合损失1点生命',
+    healthDebuffPerTurn: 1,
+    treatCost: { wood: 2, stone: 1 },
+  },
+]
 
 export const randomEvents: RandomEvent[] = [
   {
@@ -6,6 +41,7 @@ export const randomEvents: RandomEvent[] = [
     text: '一只野兽突然袭击了你！',
     type: 'bad',
     effects: { health: -15 },
+    injuryId: 'bleeding',
   },
   {
     id: 'find_berries',
@@ -36,6 +72,7 @@ export const randomEvents: RandomEvent[] = [
     text: '你不小心踩到了一个陷阱！',
     type: 'bad',
     effects: { health: -10 },
+    injuryId: 'fracture',
   },
   {
     id: 'food_cache',
@@ -60,6 +97,7 @@ export const randomEvents: RandomEvent[] = [
     text: '你在行走时不小心摔倒了。',
     type: 'bad',
     effects: { health: -6 },
+    injuryId: 'sprain',
   },
   {
     id: 'sunny',
@@ -78,6 +116,7 @@ export const randomEvents: RandomEvent[] = [
     text: '你吃了不干净的东西，感觉有些不适。',
     type: 'bad',
     effects: { health: -8, hunger: 8 },
+    injuryId: 'infection',
   },
   {
     id: 'peaceful_night',
